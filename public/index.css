@@ -1,0 +1,52 @@
+#root {
+    padding-left: 20vw;
+    padding-top: 5%;
+    width: 60vw;
+}
+
+body {
+
+    background: #1a1c37;
+}
+
+@media only screen and (max-width: 1333.33px) {
+    #root {
+        padding-left: calc((100vw - 800px)/2);
+    }
+}
+
+header {
+    padding-left: 1%;
+    padding-right: 1%;
+    padding-top: 2%;
+}
+
+#title {
+    color: #F5F5FB;
+    font: bold 30px Segoe UI;
+    text-align: center;
+}
+
+#welcome-container {
+    position: relative;
+}
+
+#welcome {
+    color: #F5F5FB;
+    position: absolute;
+    top: -30px;
+    right: 120px;
+}
+
+#logo {
+    position: relative;
+    width: 5px;
+    height: 2px;
+}
+
+#medmilk {
+    position: absolute;
+    top: -25px;
+    left: 120px;
+    width: 100px;
+}
