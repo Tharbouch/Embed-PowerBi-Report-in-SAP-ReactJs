@@ -1,9 +1,7 @@
 #container {
-  position: relative;
-  background: #1a1c37;
-  color: #6E6E6E;
-  height: 780px;
-  width: 1152px;
+  position: absolute;
+  width: 1500px;
+  height: 845px;
 }
 
 #loading {
@@ -12,10 +10,38 @@
   margin: 0;
   position: absolute;
   top: 40%;
-  left: 50%;
+  left: 55%;
   transform: translate(-50%, -50%);
+}
+
+
+#parameter {
+
+  width: 850px;
+  display: inline-block;
+  justify-content: space-around;
+  position: absolute;
+  background: #f7f4f4;
+  border: #fdfdfd solid;
+  border-radius: 20px;
+  padding: 10px;
+}
+
+input {
+  margin: 0 25px;
+  border-radius: 20px;
+  border: #1a1c37 solid;
+  height: 30px;
+  width: 120px;
+  text-align: center;
+  size: 20;
 }
 
 iframe {
   border: none;
+}
+
+label {
+  font: bold;
+  color: #1a1c37;
 }

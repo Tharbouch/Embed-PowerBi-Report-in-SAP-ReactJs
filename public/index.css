@@ -1,12 +1,7 @@
-#root {
-    padding-left: 20vw;
-    padding-top: 5%;
-    width: 60vw;
-}
-
 body {
-
-    background: #1a1c37;
+    background: #24263f;
+    width: 100%;
+    height: 100%;
 }
 
 @media only screen and (max-width: 1333.33px) {
@@ -19,6 +14,21 @@ header {
     padding-left: 1%;
     padding-right: 1%;
     padding-top: 2%;
+    margin-bottom: 55px;
+}
+
+
+#logo {
+    position: relative;
+    width: 5px;
+    height: 2px;
+}
+
+#medmilk {
+    position: absolute;
+    top: -25px;
+    left: 120px;
+    width: 100px;
 }
 
 #title {
@@ -38,15 +48,32 @@ header {
     right: 120px;
 }
 
-#logo {
+
+#root {
+    padding-left: 9%;
+    padding-top: 5%;
+    width: 1600px;
+    height: 890px;
     position: relative;
-    width: 5px;
-    height: 2px;
 }
 
-#medmilk {
-    position: absolute;
-    top: -25px;
-    left: 120px;
-    width: 100px;
+.hidden {
+    display: none;
+}
+
+#parameters {
+    width: 850px;
+    position: relative;
+    text-align: center;
+    left: 5%;
+}
+
+footer {
+    padding: 20px 0;
+    background-color: #1a1c37;
+    color: #eaeef1;
+    bottom: 0px;
+    margin-top: auto;
+    text-align: center;
+
 }

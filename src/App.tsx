@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { AuthenticationResult, AuthError, PublicClientApplication } from "@azure/msal-browser";
 import ReactLoading from "react-loading";
 import { service, factories, models, IEmbedConfiguration } from 'powerbi-client';
@@ -8,6 +9,7 @@ import * as config from "./Config";
 
 let accessToken = "";
 let embedUrl = "";
+let datasetID = "";
 let container: HTMLElement;
 let refer: React.Ref<HTMLDivElement>;
 let loading: JSX.Element;
@@ -15,13 +17,13 @@ const powerbi = new service.Service(factories.hpmFactory, factories.wpmpFactory,
 
 
 interface AppProps { }
-interface AppState { accessToken: string; embedUrl: string; error: string[] }
+interface AppState { accessToken: string; embedUrl: string; error: string[]; datasetID: string }
 
 class Bilban extends React.Component<AppProps, AppState>{
 
     constructor(value: AppProps) {
         super(value);
-        this.state = { accessToken: "", embedUrl: "", error: [] };
+        this.state = { accessToken: "", embedUrl: "", error: [], datasetID: "" };
         refer = React.createRef();
 
         loading = (
@@ -38,13 +40,13 @@ class Bilban extends React.Component<AppProps, AppState>{
 
     render(): JSX.Element {
 
+        const thisObj = this;
 
         if (this.state.error.length) {
 
             this.state.error.forEach(line => {
                 console.log(line)
-                container.appendChild(document.createTextNode(line));
-                container.appendChild(document.createElement("br"));
+                alert(line)
             })
         }
         else if (this.state.accessToken !== "" && this.state.embedUrl !== "") {
@@ -55,12 +57,20 @@ class Bilban extends React.Component<AppProps, AppState>{
                 embedUrl,
                 id: config.reportId,
                 settings: {
-                    background: models.BackgroundType.Transparent
+                    panes: {
+                        filters: {
+                            visible: false
+                        },
+                        pageNavigation: {
+                            visible: false
+                        }
+                    }
                 }
 
             };
 
             const report = powerbi.embed(container, embedConfiguration);
+
 
             // Clear any other loaded handler events
             report.off("loaded");
@@ -76,6 +86,27 @@ class Bilban extends React.Component<AppProps, AppState>{
             // Triggers when a content is successfully embedded in UI
             report.on("rendered", function () {
                 console.log("Report render successful");
+
+
+
+                document.getElementById('parameters').classList.toggle("hidden");
+
+                const elem = React.createElement('div', {
+                    id: 'parameter'
+                }, [
+                    <>
+                        <label htmlFor="dateDebut" >Date Debut:</label>
+                        <input type="date" id="name" name="dateDebut"  ></input>
+                        <label htmlFor="dateFin" >Date Fin:</label>
+                        <input type="date" id="name" name="dateFin"  ></input>
+                        <label htmlFor="DateInventaire" >Date Inventaire:</label>
+                        <input type="date" id="name" name="DateInventaire"  ></input>
+                    </>
+                ]
+                );
+                ReactDOM.render(elem, document.getElementById('parameters'))
+
+                thisObj.getParameters();
             });
 
             // Clear any other error handler event
@@ -98,7 +129,6 @@ class Bilban extends React.Component<AppProps, AppState>{
 
         if (refer !== null) {
             container = refer["current"];
-
         }
 
         // User input - null check
@@ -222,6 +252,7 @@ class Bilban extends React.Component<AppProps, AppState>{
                         // Successful response
                         if (response.ok) {
                             embedUrl = body["embedUrl"];
+                            datasetID = body["datasetId"];
                             thisObj.setState({ accessToken: accessToken, embedUrl: embedUrl });
                         }
                         // If error message is available
@@ -245,10 +276,47 @@ class Bilban extends React.Component<AppProps, AppState>{
             })
     }
 
+    getParameters(): void {
+
+        const thisObj: this = this;
+
+        fetch("https://api.powerbi.com/v1.0/myorg/datasets/" + datasetID + "/parameters", {
+            headers: {
+                "Authorization": "Bearer " + accessToken
+            },
+            method: "GET"
+        }).then(function (response) {
+            const errorMessage: string[] = [];
+            errorMessage.push("Error occurred while fetching the Paremeters of the report")
+            errorMessage.push("Request Id: " + response.headers.get("requestId"));
+            response.json()
+                .then(function (body) {
+                    if (response.ok) {
+                        console.log(body);
+                    }
+                    else {
+                        errorMessage.push("Error " + response.status + ": " + body.error.code);
+
+                        thisObj.setState({ error: errorMessage });
+                    }
+                })
+                .catch(function () {
+                    errorMessage.push("Error " + response.status + ":  An error has occurred");
+
+                    thisObj.setState({ error: errorMessage });
+                });
+        })
+            .catch(function (error) {
+
+                // Error in making the API call
+                thisObj.setState({ error: error });
+            })
+    }
+
     setUsername(username: string): void {
         const welcome = document.getElementById("welcome");
         if (welcome !== null)
-            welcome.innerText = "Welcome, " + username;
+            welcome.innerText = "Bienvenu, " + username;
     }
 }
 
