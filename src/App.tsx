@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import { AuthenticationResult, AuthError, PublicClientApplication } from "@azure/msal-browser";
 import ReactLoading from "react-loading";
 import { service, factories, models, IEmbedConfiguration } from 'powerbi-client';
@@ -91,6 +91,9 @@ class Bilban extends React.Component<AppProps, AppState>{
 
                 document.getElementById('parameters').classList.toggle("hidden");
 
+                const root = ReactDOM.createRoot(
+                    document.getElementById('parameters') as HTMLElement
+                )
                 const elem = React.createElement('div', {
                     id: 'parameter'
                 }, [
@@ -104,7 +107,7 @@ class Bilban extends React.Component<AppProps, AppState>{
                     </>
                 ]
                 );
-                ReactDOM.render(elem, document.getElementById('parameters'))
+                root.render(elem);
 
                 thisObj.getParameters();
             });
