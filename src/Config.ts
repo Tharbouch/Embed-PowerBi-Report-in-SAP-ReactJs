@@ -7,7 +7,7 @@
 
 // Scope of AAD app. Use the below configuration to use all the permissions provided in the AAD app through Azure portal.
 // Refer https://aka.ms/PowerBIPermissions for complete list of Power BI scopes
-export const scopes: string[] = ["https://analysis.windows.net/powerbi/api/Report.Read.All", "https://analysis.windows.net/powerbi/api/Dataset.Read.All"];
+export const scopes: string[] = ["https://analysis.windows.net/powerbi/api/Report.Read.All", "https://analysis.windows.net/powerbi/api/Dataset.ReadWrite.All", "https://analysis.windows.net/powerbi/api/Dataset.Read.All", "https://analysis.windows.net/powerbi/api/Workspace.ReadWrite.All"];
 
 // Client Id (Application Id) of the AAD app.
 export const clientId: string = "065ba81b-7348-4314-8f78-16d825712581";

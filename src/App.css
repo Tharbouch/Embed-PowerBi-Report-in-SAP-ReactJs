@@ -1,7 +1,9 @@
 #container {
-  position: absolute;
+
+  margin-top: 30px;
   width: 1500px;
   height: 845px;
+  position: relative;
 }
 
 #loading {
@@ -15,12 +17,18 @@
 }
 
 
+#parameters {
+  width: 850px;
+  position: relative;
+  text-align: center;
+  left: 20%;
+}
+
 #parameter {
 
   width: 850px;
   display: inline-block;
   justify-content: space-around;
-  position: absolute;
   background: #f7f4f4;
   border: #fdfdfd solid;
   border-radius: 20px;
@@ -28,13 +36,12 @@
 }
 
 input {
-  margin: 0 25px;
+  padding: 0 10px;
+  margin: 0 20px;
   border-radius: 20px;
   border: #1a1c37 solid;
   height: 30px;
-  width: 120px;
-  text-align: center;
-  size: 20;
+  width: 110px;
 }
 
 iframe {
@@ -44,4 +51,5 @@ iframe {
 label {
   font: bold;
   color: #1a1c37;
+  margin-left: 25px;
 }

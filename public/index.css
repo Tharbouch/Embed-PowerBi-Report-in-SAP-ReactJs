@@ -48,33 +48,27 @@ header {
     right: 120px;
 }
 
+#main {
+    margin-bottom: 30px;
+}
 
 #root {
+    padding-top: 3%;
     padding-left: 9%;
-    padding-top: 5%;
     width: 1600px;
-    height: 890px;
-    position: relative;
+    height: 980px;
 }
 
 .hidden {
     display: none;
 }
 
-#parameters {
-    width: 850px;
-    position: relative;
-    text-align: center;
-    left: 5%;
-    z-index: 1000;
-}
 
 footer {
     padding: 20px 0;
     background-color: #1a1c37;
     color: #eaeef1;
     bottom: 0px;
-    margin-top: auto;
+    margin-top: 30px;
     text-align: center;
-
 }

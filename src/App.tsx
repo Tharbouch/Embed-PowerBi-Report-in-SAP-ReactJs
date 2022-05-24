@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
 import { AuthenticationResult, AuthError, PublicClientApplication } from "@azure/msal-browser";
 import ReactLoading from "react-loading";
 import { service, factories, models, IEmbedConfiguration } from 'powerbi-client';
@@ -10,37 +9,34 @@ import * as config from "./Config";
 let accessToken = "";
 let embedUrl = "";
 let datasetID = "";
+
+let dateDebut;
+let dateFin;
+let debutInput: React.Ref<HTMLInputElement>;
+let finInput: React.Ref<HTMLInputElement>;
+
 let container: HTMLElement;
 let refer: React.Ref<HTMLDivElement>;
-let loading: JSX.Element;
 const powerbi = new service.Service(factories.hpmFactory, factories.wpmpFactory, factories.routerFactory);
 
 
 interface AppProps { }
-interface AppState { accessToken: string; embedUrl: string; error: string[]; datasetID: string }
+interface AppState { accessToken: string; embedUrl: string; error: string[]; datasetID: string; dateDebut: string; dateFin: string; }
 
 class Bilban extends React.Component<AppProps, AppState>{
 
     constructor(value: AppProps) {
         super(value);
-        this.state = { accessToken: "", embedUrl: "", error: [], datasetID: "" };
+        this.state = { accessToken: "", embedUrl: "", error: [], datasetID: "", dateDebut: "", dateFin: "" };
         refer = React.createRef();
+        debutInput = React.createRef();
+        finInput = React.createRef();
 
-        loading = (
-            <div
-                id="container"
-                ref={refer} >
-                <div id="loading">
-                    <ReactLoading type="spin" color="#ffffff" height={50} width={50} />
-                </div>
-            </div>
+        this.updateParameters = this.updateParameters.bind(this);
 
-        )
     }
 
     render(): JSX.Element {
-
-        const thisObj = this;
 
         if (this.state.error.length) {
 
@@ -78,6 +74,8 @@ class Bilban extends React.Component<AppProps, AppState>{
             // Triggers when a content schema is successfully loaded
             report.on("loaded", function () {
                 console.log("Report load successful");
+
+                document.getElementById('parameters').classList.toggle("hidden");
             });
 
             // Clear any other rendered handler events
@@ -87,29 +85,6 @@ class Bilban extends React.Component<AppProps, AppState>{
             report.on("rendered", function () {
                 console.log("Report render successful");
 
-
-
-                document.getElementById('parameters').classList.toggle("hidden");
-
-                const root = ReactDOM.createRoot(
-                    document.getElementById('parameters') as HTMLElement
-                )
-                const elem = React.createElement('div', {
-                    id: 'parameter'
-                }, [
-                    <>
-                        <label htmlFor="dateDebut" >Date Debut:</label>
-                        <input type="date" id="name" name="dateDebut"  ></input>
-                        <label htmlFor="dateFin" >Date Fin:</label>
-                        <input type="date" id="name" name="dateFin"  ></input>
-                        <label htmlFor="DateInventaire" >Date Inventaire:</label>
-                        <input type="date" id="name" name="DateInventaire"  ></input>
-                    </>
-                ]
-                );
-                root.render(elem);
-
-                thisObj.getParameters();
             });
 
             // Clear any other error handler event
@@ -124,7 +99,25 @@ class Bilban extends React.Component<AppProps, AppState>{
             });
         }
 
-        return loading;
+        return (<>
+            <div id="parameters" className="hidden">
+                <div id="parameter">
+                    <label htmlFor="dateDebut">Date Debut:</label>
+                    <input type="date" id="name" name="dateDebut" ref={debutInput} defaultValue={this.state.dateDebut}></input>
+                    <label htmlFor="dateFin">Date Fin:</label>
+                    <input type="date" id="name" name="dateFin" ref={finInput} defaultValue={this.state.dateFin}></input>
+                    <button onClick={this.updateParameters}></button>
+                </div>
+            </div>
+            <div
+                id="container"
+                ref={refer}>
+                <div id="loading">
+                    <ReactLoading type="spin" color="#ffffff" height={50} width={50} />
+                </div>
+            </div>
+        </>);
+
 
     }
 
@@ -257,6 +250,7 @@ class Bilban extends React.Component<AppProps, AppState>{
                             embedUrl = body["embedUrl"];
                             datasetID = body["datasetId"];
                             thisObj.setState({ accessToken: accessToken, embedUrl: embedUrl });
+                            thisObj.getParameters();
                         }
                         // If error message is available
                         else {
@@ -282,6 +276,7 @@ class Bilban extends React.Component<AppProps, AppState>{
     getParameters(): void {
 
         const thisObj: this = this;
+        let trans;
 
         fetch("https://api.powerbi.com/v1.0/myorg/datasets/" + datasetID + "/parameters", {
             headers: {
@@ -295,7 +290,156 @@ class Bilban extends React.Component<AppProps, AppState>{
             response.json()
                 .then(function (body) {
                     if (response.ok) {
-                        console.log(body);
+
+                        console.log(accessToken);
+
+                        dateDebut = body['value'][0]['currentValue'];
+                        dateDebut = dateDebut.split('/')[2] + '-' + dateDebut.split('/')[1] + '-' + dateDebut.split('/')[0];
+                        trans = new Date(dateDebut)
+                        dateDebut = trans.toISOString().split('T')[0]
+
+                        dateFin = body['value'][1]['currentValue'];
+                        dateFin = dateFin.split('/')[2] + '-' + dateFin.split('/')[1] + '-' + dateFin.split('/')[0];
+                        trans = new Date(dateFin)
+                        dateFin = trans.toISOString().split('T')[0]
+
+                        thisObj.setState({ dateDebut: dateDebut, dateFin: dateFin });
+                    }
+                    else {
+                        errorMessage.push("Error " + response.status + ": " + body.error.code);
+
+                        thisObj.setState({ error: errorMessage });
+                    }
+                })
+                .catch(function () {
+                    errorMessage.push("Error " + response.status + ":  An error has occurred");
+
+                    thisObj.setState({ error: errorMessage });
+                });
+        })
+            .catch(function (error) {
+
+                // Error in making the API call
+                thisObj.setState({ error: error });
+            })
+    }
+
+    async updateParameters(event) {
+
+        let init = new Date(debutInput['current'].value);
+        var Invetaire = new Date(init.getTime());
+        Invetaire.setDate(init.getDate() - 1);
+
+        const thisObj: this = this;
+
+        await fetch("https://api.powerbi.com/v1.0/myorg/datasets/" + datasetID + "/Default.UpdateParameters", {
+            headers: {
+                "Authorization": "Bearer " + accessToken,
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+
+                "updateDetails": [
+                    {
+                        "name": "DateDebut",
+                        "newValue": new Date(debutInput['current'].value).toLocaleDateString('fr-FR')
+                    },
+                    {
+                        "name": "DateFin",
+                        "newValue": new Date(finInput['current'].value).toLocaleDateString('fr-FR')
+                    },
+                    {
+                        "name": "DebutDePeriod",
+                        "newValue": Invetaire.toLocaleDateString('fr-FR')
+                    }
+                ]
+
+            }),
+            method: "POST"
+        })
+            .then(function (response) {
+                const errorMessage: string[] = [];
+                errorMessage.push("Error occurred while upadting the parameters")
+                errorMessage.push("Request Id: " + response.headers.get("requestId"));
+
+                if (response.ok) {
+                    console.log(response);
+                    thisObj.refreshDataset();
+                }
+                else {
+                    errorMessage.push("Error " + response.status + ": " + response.statusText);
+
+                    thisObj.setState({ error: errorMessage });
+                }
+
+
+            })
+            .catch(function (error) {
+                // Error in making the API call
+                console.log(error);
+                thisObj.setState({ error: error });
+            });
+
+    }
+
+    async refreshDataset() {
+
+        const thisObj: this = this;
+
+        await fetch("https://api.powerbi.com/v1.0/myorg/groups/" + config.workspaceId + "/datasets/" + datasetID + "/refreshes", {
+            headers: {
+                "Authorization": "Bearer " + accessToken
+            },
+            method: "POST"
+        })
+            .then(function (response) {
+                const errorMessage: string[] = [];
+                errorMessage.push("Error occurred while upadting the parameters")
+                errorMessage.push("Request Id: " + response.headers.get("requestId"));
+
+                if (response.ok) {
+                    console.log(response);
+                    alert('all ok');
+                    thisObj.getDataRefreshStatus();
+                }
+                else {
+                    errorMessage.push("Error " + response.status + ": " + response.statusText);
+
+                    thisObj.setState({ error: errorMessage });
+                }
+
+            })
+            .catch(function (error) {
+                // Error in making the API call
+                console.log(error);
+                thisObj.setState({ error: error });
+            });
+    }
+
+    async getDataRefreshStatus() {
+
+        const thisObj: this = this;
+
+        await fetch("https://api.powerbi.com/v1.0/myorg/groups/" + config.workspaceId + "/datasets/" + datasetID + "/refreshes?$top=1", {
+            headers: {
+                "Authorization": "Bearer " + accessToken
+            },
+            method: "GET"
+        }).then(async function (response) {
+            const errorMessage: string[] = [];
+            errorMessage.push("Error");
+            errorMessage.push("Request Id: " + response.headers.get("requestId"));
+            await response.json()
+                .then(function (body) {
+                    if (response.ok) {
+                        if (body.value[0]['status'] === 'Unknown') {
+                            console.log('3iw')
+                            setInterval(function () { thisObj.getDataRefreshStatus(); }, 30000)
+                        }
+                        if (body.value[0]['status'] === 'Completed') {
+                            alert('Update done refresh page')
+                        }
                     }
                     else {
                         errorMessage.push("Error " + response.status + ": " + body.error.code);
