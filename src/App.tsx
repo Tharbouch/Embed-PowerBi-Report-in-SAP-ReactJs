@@ -435,10 +435,15 @@ class Bilban extends React.Component<AppProps, AppState>{
                     if (response.ok) {
                         if (body.value[0]['status'] === 'Unknown') {
                             console.log('3iw')
-                            setInterval(function () { thisObj.getDataRefreshStatus(); }, 30000)
+                            setInterval(function () {
+                                thisObj.getDataRefreshStatus();
+                            }
+                                , 30000
+                            )
                         }
                         if (body.value[0]['status'] === 'Completed') {
                             alert('Update done refresh page')
+                            window.location.reload();
                         }
                     }
                     else {
