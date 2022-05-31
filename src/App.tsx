@@ -75,7 +75,7 @@ class Bilban extends React.Component<AppProps, AppState>{
             report.on("loaded", function () {
                 console.log("Report load successful");
 
-                document.getElementById('parameters').classList.toggle("hidden");
+                document.getElementById('parameters')!.classList.toggle("hidden");
             });
 
             // Clear any other rendered handler events
@@ -106,7 +106,7 @@ class Bilban extends React.Component<AppProps, AppState>{
                     <input type="date" id="name" name="dateDebut" ref={debutInput} defaultValue={this.state.dateDebut}></input>
                     <label htmlFor="dateFin">Date Fin:</label>
                     <input type="date" id="name" name="dateFin" ref={finInput} defaultValue={this.state.dateFin}></input>
-                    <button onClick={this.updateParameters}></button>
+                    <button onClick={this.updateParameters}>Actualisez </button>
                 </div>
             </div>
             <div
@@ -158,10 +158,10 @@ class Bilban extends React.Component<AppProps, AppState>{
 
 
         function handleResponse(response: AuthenticationResult): void {
-
+            console.log(response);
             if (response !== null) {
                 accessToken = response.accessToken;
-                thisObj.setUsername(response.account.name);
+                thisObj.setUsername(response.account!.name as unknown as string);
                 thisObj.tryRefreshUserPermissions();
                 thisObj.getembedUrl();
             }
@@ -173,12 +173,12 @@ class Bilban extends React.Component<AppProps, AppState>{
                 }
                 else if (currentAccounts.length === 1) {
                     msalInstance.setActiveAccount(currentAccounts[0]);
-                    thisObj.setUsername(currentAccounts[0].name);
+                    thisObj.setUsername(currentAccounts[0].name as unknown as string);
                 }
             }
         }
 
-        msalInstance.handleRedirectPromise().then(handleResponse).catch((error: AuthError) => {
+        msalInstance.handleRedirectPromise().then(() => handleResponse).catch((error: AuthError) => {
             this.setState({ error: ["Redirect error: " + error] });
         });
 
@@ -186,7 +186,7 @@ class Bilban extends React.Component<AppProps, AppState>{
 
             msalInstance.acquireTokenSilent(loginRequest).then(response => {
                 accessToken = response.accessToken;
-                this.setUsername(response.account.name);
+                this.setUsername(response.account!.name as unknown as string);
                 this.getembedUrl();
             }).catch((error: AuthError) => {
                 if (error.name === "InteractionRequiredAuthError") {
@@ -326,7 +326,7 @@ class Bilban extends React.Component<AppProps, AppState>{
 
     async updateParameters(event) {
 
-        let init = new Date(debutInput['current'].value);
+        let init = new Date(debutInput!['current'].value);
         var Invetaire = new Date(init.getTime());
         Invetaire.setDate(init.getDate() - 1);
 
@@ -343,11 +343,11 @@ class Bilban extends React.Component<AppProps, AppState>{
                 "updateDetails": [
                     {
                         "name": "DateDebut",
-                        "newValue": new Date(debutInput['current'].value).toLocaleDateString('fr-FR')
+                        "newValue": new Date(debutInput!['current'].value).toLocaleDateString('fr-FR')
                     },
                     {
                         "name": "DateFin",
-                        "newValue": new Date(finInput['current'].value).toLocaleDateString('fr-FR')
+                        "newValue": new Date(finInput!['current'].value).toLocaleDateString('fr-FR')
                     },
                     {
                         "name": "DebutDePeriod",

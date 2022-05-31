@@ -44,6 +44,16 @@ input {
   width: 110px;
 }
 
+button {
+  margin-left: 55px;
+  border: #6a6a6a solid;
+  border-radius: 20px;
+  height: 35px;
+  width: 120px;
+  background: #151728;
+  color: white;
+}
+
 iframe {
   border: none;
 }
