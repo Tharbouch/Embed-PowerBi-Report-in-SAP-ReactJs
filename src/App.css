@@ -16,23 +16,40 @@
   transform: translate(-50%, -50%);
 }
 
+#load {
+  height: 980px;
+  position: relative;
+}
+
+#loadText {
+  color: #F5F5FB;
+  font: bold 30px Segoe UI;
+  text-align: center;
+  position: absolute;
+  top: 35%;
+  left: 41%;
+}
+
+#spin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 
 #parameters {
-  width: 850px;
+  right: 3%;
   position: relative;
   text-align: center;
-  left: 20%;
 }
 
 #parameter {
 
-  width: 850px;
-  display: inline-block;
-  justify-content: space-around;
   background: #f7f4f4;
-  border: #fdfdfd solid;
-  border-radius: 20px;
+  border: solid #fdfdfd;
+  display: inline-block;
   padding: 10px;
+  width: 1050px;
 }
 
 input {
@@ -42,6 +59,15 @@ input {
   border: #1a1c37 solid;
   height: 30px;
   width: 110px;
+}
+
+#select {
+  background: #f7f4f4;
+  border: solid #1a1c37;
+  height: 30px;
+  margin: 0 20px;
+  padding: 0 10px;
+  border-radius: 20px;
 }
 
 button {

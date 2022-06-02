@@ -1,11 +1,9 @@
 const https = require("https");
 const fs = require("fs");
 const path = require('path');
-
-// Import the express module
 const express = require("express");
 
-// Instantiate an Express application
+
 const app = express();
 
 

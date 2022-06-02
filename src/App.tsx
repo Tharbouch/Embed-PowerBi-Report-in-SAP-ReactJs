@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom/client';
 import { AuthenticationResult, AuthError, PublicClientApplication } from "@azure/msal-browser";
 import ReactLoading from "react-loading";
 import { service, factories, models, IEmbedConfiguration } from 'powerbi-client';
@@ -12,26 +13,27 @@ let datasetID = "";
 
 let dateDebut;
 let dateFin;
+let Site;
 let debutInput: React.Ref<HTMLInputElement>;
 let finInput: React.Ref<HTMLInputElement>;
-
+let siteInput: React.Ref<HTMLSelectElement>;
 let container: HTMLElement;
 let refer: React.Ref<HTMLDivElement>;
 const powerbi = new service.Service(factories.hpmFactory, factories.wpmpFactory, factories.routerFactory);
 
-
 interface AppProps { }
-interface AppState { accessToken: string; embedUrl: string; error: string[]; datasetID: string; dateDebut: string; dateFin: string; }
+interface AppState { accessToken: string; embedUrl: string; error: string[]; datasetID: string; dateDebut: string; dateFin: string; site: string }
 
 class Bilban extends React.Component<AppProps, AppState>{
 
     constructor(value: AppProps) {
         super(value);
-        this.state = { accessToken: "", embedUrl: "", error: [], datasetID: "", dateDebut: "", dateFin: "" };
+        this.state = { accessToken: "", embedUrl: "", error: [], datasetID: "", dateDebut: "", dateFin: "", site: "" };
         refer = React.createRef();
         debutInput = React.createRef();
         finInput = React.createRef();
-
+        siteInput = React.createRef();
+        this.handleChange = this.handleChange.bind(this);
         this.updateParameters = this.updateParameters.bind(this);
 
     }
@@ -42,6 +44,9 @@ class Bilban extends React.Component<AppProps, AppState>{
 
             this.state.error.forEach(line => {
                 console.log(line)
+                if (line.split(":")[0] === "BrowserAuthError") {
+                    this.login();
+                }
                 alert(line)
             })
         }
@@ -73,8 +78,8 @@ class Bilban extends React.Component<AppProps, AppState>{
 
             // Triggers when a content schema is successfully loaded
             report.on("loaded", function () {
-                console.log("Report load successful");
 
+                console.log("Report load successful");
                 document.getElementById('parameters')!.classList.toggle("hidden");
             });
 
@@ -106,6 +111,22 @@ class Bilban extends React.Component<AppProps, AppState>{
                     <input type="date" id="name" name="dateDebut" ref={debutInput} defaultValue={this.state.dateDebut}></input>
                     <label htmlFor="dateFin">Date Fin:</label>
                     <input type="date" id="name" name="dateFin" ref={finInput} defaultValue={this.state.dateFin}></input>
+                    <label htmlFor="Site">Agence:</label>
+                    <select name="Site" id="select" ref={siteInput} value={this.state.site} onChange={this.handleChange}>
+                        <option value="0101 - Casablanca" id='0101 '>0101 - Casablanca</option>
+                        <option value="0102 - FBS" id='0102 '>0102 - FBS</option>
+                        <option value="0103 - EL Jadida" id='0103 '>0103 - EL Jadida</option>
+                        <option value="0201 - Oujda" id='0201 '>0201 - Oujda</option>
+                        <option value="0202 - Fes" id='0202 '>0202 - Fes  </option>
+                        <option value="0203 - Meknes" id='0203 '>0203 - Meknes</option>
+                        <option value="0301 - Marrakech" id='0301 '>0301 - Marrakech</option>
+                        <option value="0303 - Kelaa" id='0303 '>0303 - Kelaa</option>
+                        <option value="0304 - Safi" id='0304 '>0304 - Safi</option>
+                        <option value="0305 - Essaouira" id='0305 '>0305 - Essaouira</option>
+                        <option value="0501 - Rabat" id='0501 '>0501 - Rabat</option>
+                        <option value="0502 - Tanger" id='0502 '>0502 - Tanger</option>
+                        <option value="0503 - Souk Larbaa" id='0503 '>0503 - Souk Larbaa</option>
+                    </select>
                     <button onClick={this.updateParameters}>Actualisez </button>
                 </div>
             </div>
@@ -121,6 +142,8 @@ class Bilban extends React.Component<AppProps, AppState>{
 
     }
 
+    handleChange(event) { this.setState({ site: event.target.value }); document.getElementById('parameters')!.classList.toggle("hidden"); }
+
     componentDidMount(): void {
 
         if (refer !== null) {
@@ -130,7 +153,8 @@ class Bilban extends React.Component<AppProps, AppState>{
         // User input - null check
         if (config.workspaceId === "" || config.reportId === "") {
             this.setState({ error: ["Please assign values to workspace Id and report Id in Config.ts file"] })
-        } else {
+        }
+        else {
 
             this.login();
         }
@@ -140,7 +164,7 @@ class Bilban extends React.Component<AppProps, AppState>{
         powerbi.reset(container);
     }
 
-    login(): void {
+    async login(): Promise<void> {
 
         const thisObj = this;
 
@@ -158,7 +182,6 @@ class Bilban extends React.Component<AppProps, AppState>{
 
 
         function handleResponse(response: AuthenticationResult): void {
-            console.log(response);
             if (response !== null) {
                 accessToken = response.accessToken;
                 thisObj.setUsername(response.account!.name as unknown as string);
@@ -170,6 +193,7 @@ class Bilban extends React.Component<AppProps, AppState>{
 
                 if (currentAccounts.length === 0) {
                     msalInstance.loginRedirect(loginRequest);
+
                 }
                 else if (currentAccounts.length === 1) {
                     msalInstance.setActiveAccount(currentAccounts[0]);
@@ -178,19 +202,22 @@ class Bilban extends React.Component<AppProps, AppState>{
             }
         }
 
-        msalInstance.handleRedirectPromise().then(() => handleResponse).catch((error: AuthError) => {
+        await msalInstance.handleRedirectPromise().then(() => handleResponse).catch((error: AuthError) => {
             this.setState({ error: ["Redirect error: " + error] });
         });
 
         if (msalInstance.getAllAccounts().length) {
-
+            const currentAccounts = msalInstance.getAllAccounts();
+            msalInstance.setActiveAccount(currentAccounts[0]);
             msalInstance.acquireTokenSilent(loginRequest).then(response => {
                 accessToken = response.accessToken;
                 this.setUsername(response.account!.name as unknown as string);
                 this.getembedUrl();
             }).catch((error: AuthError) => {
+                console.log(error.name);
                 if (error.name === "InteractionRequiredAuthError") {
                     msalInstance.acquireTokenRedirect(loginRequest);
+
                 }
                 else {
                     thisObj.setState({ error: [error.toString()] })
@@ -198,6 +225,7 @@ class Bilban extends React.Component<AppProps, AppState>{
             })
 
         }
+
         else {
             msalInstance.loginRedirect(loginRequest);
 
@@ -290,9 +318,7 @@ class Bilban extends React.Component<AppProps, AppState>{
             response.json()
                 .then(function (body) {
                     if (response.ok) {
-
-                        console.log(accessToken);
-
+                        console.log(body);
                         dateDebut = body['value'][0]['currentValue'];
                         dateDebut = dateDebut.split('/')[2] + '-' + dateDebut.split('/')[1] + '-' + dateDebut.split('/')[0];
                         trans = new Date(dateDebut)
@@ -303,7 +329,10 @@ class Bilban extends React.Component<AppProps, AppState>{
                         trans = new Date(dateFin)
                         dateFin = trans.toISOString().split('T')[0]
 
-                        thisObj.setState({ dateDebut: dateDebut, dateFin: dateFin });
+                        Site = body['value'][3]['currentValue'];
+
+
+                        thisObj.setState({ dateDebut: dateDebut, dateFin: dateFin, site: Site });
                     }
                     else {
                         errorMessage.push("Error " + response.status + ": " + body.error.code);
@@ -350,8 +379,12 @@ class Bilban extends React.Component<AppProps, AppState>{
                         "newValue": new Date(finInput!['current'].value).toLocaleDateString('fr-FR')
                     },
                     {
-                        "name": "DebutDePeriod",
+                        "name": "DateInventaire",
                         "newValue": Invetaire.toLocaleDateString('fr-FR')
+                    },
+                    {
+                        "name": "Site",
+                        "newValue": siteInput!['current'].value as unknown as string
                     }
                 ]
 
@@ -364,7 +397,6 @@ class Bilban extends React.Component<AppProps, AppState>{
                 errorMessage.push("Request Id: " + response.headers.get("requestId"));
 
                 if (response.ok) {
-                    console.log(response);
                     thisObj.refreshDataset();
                 }
                 else {
@@ -400,7 +432,15 @@ class Bilban extends React.Component<AppProps, AppState>{
 
                 if (response.ok) {
                     console.log(response);
-                    alert('all ok');
+                    alert("l'actualisation a été effectuée avec succès. Les données sont maintenant mises à jour cela prendra plus de 10 minutes. Veuillez être patient. :)");
+                    let root = ReactDOM.createRoot(document.getElementById('main') as HTMLElement)
+
+                    root.render(<div id="load">
+                        <p id="loadText">actualisation en cours....</p>
+                        <div id='spin'>
+                            <ReactLoading type="spin" color="#ffffff" height={50} width={50} />
+                        </div>
+                    </div>)
                     thisObj.getDataRefreshStatus();
                 }
                 else {
@@ -434,15 +474,14 @@ class Bilban extends React.Component<AppProps, AppState>{
                 .then(function (body) {
                     if (response.ok) {
                         if (body.value[0]['status'] === 'Unknown') {
-                            console.log('3iw')
                             setInterval(function () {
                                 thisObj.getDataRefreshStatus();
                             }
-                                , 30000
+                                , 120000
                             )
                         }
                         if (body.value[0]['status'] === 'Completed') {
-                            alert('Update done refresh page')
+                            alert('Actualisation effectuée')
                             window.location.reload();
                         }
                     }
