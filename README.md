@@ -1,2 +1,1 @@
-pour exécuter l'application, vous devez d'abord installer node à partir de "https://nodejs.org/en/"
-puis vous devrez exécuter la commande "npm install" dans le terminal pour installer toutes les dépendances dont vous aurez besoin pour exécuter l'application.
+This is a SPA using ReactJS and NodeJS, this application is to embed Power BI report and let the user edit the parameters of the report dataset and update the dataset
